@@ -25,7 +25,8 @@ The dataset is stored in a *comma-separated-value (CSV)* file and there are a to
 
 Load the required packages:
 
-```{r}
+
+```r
 library(plyr)
 library(timeDate)
 library(lattice)
@@ -36,7 +37,8 @@ library(lattice)
 
 Download the data and unzip it in the working direcotory:
 
-```{r}
+
+```r
 fileUrl <- "http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 destFile <- "ActivityMonitoringData.zip"
 unzippedFile <- "activity.csv"
@@ -46,26 +48,35 @@ if(!file.exists(destFile)){
 }
 
 unzip(destFile)
-
 ```
 
 Load the data en show the structure of the dataset:
 
-```{r}
+
+```r
 activityData <- read.csv(unzippedFile,header=TRUE)
 str(activityData)
 ```
 
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
+
 Change the class of the date variable to date
 
-```{r}
+
+```r
 activityData$date = as.Date(activityData$date,"%Y-%m-%d")
 ```
 
 
 Disable scientific notation of numbers to increase readability of numbers
 
-```{r}
+
+```r
 options(scipen=999)
 ```
 
@@ -75,43 +86,70 @@ options(scipen=999)
 A new data frame is created that sums up the total steps for each date. Here we use the ddply function
 
 
-```{r}
+
+```r
 activityStepDay <- ddply(activityData,.(date),summarize,steps.per.day = sum(steps))
 head(activityStepDay)
 ```
 
+```
+##         date steps.per.day
+## 1 2012-10-01            NA
+## 2 2012-10-02           126
+## 3 2012-10-03         11352
+## 4 2012-10-04         12116
+## 5 2012-10-05         13294
+## 6 2012-10-06         15420
+```
+
 A histogram is plotted. The number of breaks is increased in order to give a more detailed view.
 
-```{r}
+
+```r
 hist(activityStepDay$steps.per.day,breaks=20,col="thistle"
      ,main="Distribution of steps per day during Oct 2012 - Nov 2012"
      ,xlab="steps/day")
 mtext("original data set")
 ```
 
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png) 
+
 The mean and median is calculated and reported. The NA's are removed
 
-```{r}
+
+```r
 meanSteps <- mean(activityStepDay$steps.per.day,na.rm=TRUE)
 medianSteps <- median(activityStepDay$steps.per.day,na.rm=TRUE)
 ```
 
-The mean number of steps each day is **`r round(meanSteps,digits=2)`**, the median number of steps each day is **`r round(medianSteps,digits=2)`**.
+The mean number of steps each day is **10766.19**, the median number of steps each day is **10765**.
 
 
 ###What is the average daily activity pattern?
 
 A new data frame is created. It contains the average daily steps over each 5-minutes interval during the day. Missing values are excluded from the calcuations.
 
-```{r}
+
+```r
 activityPatern <- ddply(activityData,.(interval),summarise,average.steps = mean(steps,na.rm = TRUE))
 head(activityPatern)
+```
+
+```
+##   interval average.steps
+## 1        0     1.7169811
+## 2        5     0.3396226
+## 3       10     0.1320755
+## 4       15     0.1509434
+## 5       20     0.0754717
+## 6       25     2.0943396
 ```
 
 A time series plot is created with in x-axis the 5-minute intervals and the average number of steps taken,
 averaged across all days on the y-axis. Additionally the peak is calculated and added to the graph.
 
-```{r}
+
+```r
 plot(activityPatern$interval
      ,activityPatern$average.steps
      ,type="l"
@@ -125,9 +163,11 @@ abline(v=activityPatern$interval[peakInterval],col="olivedrab3",lwd=2)
 legend("topright",lty=1,lwd=2,bty="n",col=c("olivedrab3"),legend=c("peak"))
 ```
 
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) 
 
-The time interval that contains,on average, the maximum number of steps is **`r activityPatern$interval[peakInterval]`** 
-(steps = `r activityPatern$average.steps[peakInterval]`)
+
+The time interval that contains,on average, the maximum number of steps is **835** 
+(steps = 206.1698113)
 
 
 ###Imputing missing values
@@ -136,20 +176,22 @@ Note that there are a number of days/intervals where there are missing values (c
 
 In order to solve this 2 subset are created. One that contains all the measurement where the steps value is missing and one where the measurements are complete. By counting the number of rows in the first subset we know how much values are actually missing.
 
-```{r}
+
+```r
 activityMissing <- subset(activityData,is.na(activityData$steps))
 activityComplete <- subset(activityData,!is.na(activityData$steps))
 nrMissing <- nrow(activityMissing)
 ```
 
-The number of missing values in the dataset is **`r nrMissing`**
+The number of missing values in the dataset is **2304**
 
 
 The missing values will now be replaced by the average number of steps taken during the respective interval measured by averaging across all days(see section "What is the daily activity patern?"). 
 
 The obtained subset is binded to the subset that contains the complete data measurements. The result is a new dataset where all data is complete.
 
-```{r}
+
+```r
 activityMissing <- merge(activityMissing,activityPatern,by="interval")
 activityMissing <- mutate(activityMissing,steps=average.steps)
 activityMissing <- activityMissing[,-4]
@@ -158,40 +200,66 @@ activityDataNew <- arrange(activityDataNew,date,interval)
 head(activityDataNew)
 ```
 
+```
+##       steps       date interval
+## 1 1.7169811 2012-10-01        0
+## 2 0.3396226 2012-10-01        5
+## 3 0.1320755 2012-10-01       10
+## 4 0.1509434 2012-10-01       15
+## 5 0.0754717 2012-10-01       20
+## 6 2.0943396 2012-10-01       25
+```
+
 A new data frame is created that sums up the total steps for each date in the new data set. Again, we use the ddply function
 
-```{r}
+
+```r
 activityStepDayNew <- ddply(activityDataNew,.(date),summarize,steps.per.day = sum(steps))
 ```
 
 A histogram is plotted. Again the number of breaks is increased
 
-```{r}
+
+```r
 hist(activityStepDayNew$steps.per.day
      ,breaks=20
      ,col="gold"
      ,main="Distribution of steps per day during Oct 2012 - Nov 2012"
      ,xlab="steps/day")
 mtext("reworked data set")
-
 ```
+
+![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14-1.png) 
 
 The mean and median are calculated and reported.
 
-```{r}
+
+```r
 meanStepsNew <- mean(activityStepDayNew$steps.per.day)
 medianStepsNew <- median(activityStepDayNew$steps.per.day)
 ```
 
-The mean number of steps each day in the reworked dataset is **`r round(meanStepsNew,digits=2)`**, the median number of steps each day is **`r round(medianStepsNew,digits=2)`**.The mean number didn't change.However, the median number slightly increased by **`r round(medianStepsNew,digits=2) - round(medianSteps,digits=2)`**. Mean and mediar now equal.
+The mean number of steps each day in the reworked dataset is **10766.19**, the median number of steps each day is **10766.19**.The mean number didn't change.However, the median number slightly increased by **1.19**. Mean and mediar now equal.
 
 We also look to a couple of other estimate statistics before imputing:
-```{r}
+
+```r
 summary(activityStepDay$steps.per.day,digits=7)
 ```
+
+```
+##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max.     NA's 
+##    41.00  8841.00 10765.00 10766.19 13294.00 21194.00        8
+```
 and after imputing:
-```{r}
+
+```r
 summary(activityStepDayNew$steps.per.day,digits=7)
+```
+
+```
+##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+##    41.00  9819.00 10766.19 10766.19 12811.00 21194.00
 ```
 
 Although the change in the median is only marginal, the differences between the 1st quartile before and after imputing and 3rd quartile before and after imputing seems to be more significant.
@@ -200,25 +268,30 @@ Although the change in the median is only marginal, the differences between the 
 
 A new factor is created with two levels "weekday" or "weekend" indicating whether a given date is weekday or weekend. I Used the isWeekday function which is part of the package "timeDate".
 
-```{r}
+
+```r
 activityDataNew <- mutate(activityDataNew,week.or.weekend = ifelse(isWeekday(activityDataNew$date),"weekday","weekend"))
 activityDataNew$week.or.weekend <- as.factor(activityDataNew$week.or.weekend)
 ```
 
 A new data frame is created which contains the average daily steps over each 5-minutes interval during the day, but the averages are now taken over weekdays and weekends separately.
 
-```{r}
+
+```r
 activityPaternSplit <- ddply(activityDataNew,.(interval,week.or.weekend),summarise,average.steps = mean(steps))
 ```
 
 A panel lattice plot is created. The plots are stacked in order to increase comparability
 
-```{r}
+
+```r
 xyplot(average.steps ~ interval | week.or.weekend,data = activityPaternSplit
        ,type = "l"
        ,layout = c(1,2)
        ,xlab = "5-minutes interval"
        ,ylab = "average numberr of steps")
 ```
+
+![plot of chunk unnamed-chunk-20](figure/unnamed-chunk-20-1.png) 
 
 As expected the intensity of steps in the morning is higher during weekdays compared to weekends.After the peak the activity heavily decreases during weekdays (a possible explanation is,amongst others, lower step activity of office employees during the day) and increases around the evening. During weekends intensitity of steps is more spread out across the day.
