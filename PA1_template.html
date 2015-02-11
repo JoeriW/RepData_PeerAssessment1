@@ -378,7 +378,9 @@ head(activityDataNew)
 
 <p>A new data frame is created that sums up the total steps for each date in the new data set. Again, we use the ddply function</p>
 
-<pre><code class="r">activityStepDayNew &lt;- ddply(activityDataNew,.(date),summarize,steps.per.day = sum(steps))
+<pre><code class="r">activityStepDayNew &lt;- ddply(activityDataNew
+                            ,.(date),summarize
+                            ,steps.per.day = sum(steps))
 </code></pre>
 
 <p>A histogram is plotted. Again the number of breaks is increased</p>
@@ -425,13 +427,18 @@ medianStepsNew &lt;- median(activityStepDayNew$steps.per.day)
 
 <p>A new factor is created with two levels &ldquo;weekday&rdquo; or &ldquo;weekend&rdquo; indicating whether a given date is weekday or weekend. I Used the isWeekday function which is part of the package &ldquo;timeDate&rdquo;.</p>
 
-<pre><code class="r">activityDataNew &lt;- mutate(activityDataNew,week.or.weekend = ifelse(isWeekday(activityDataNew$date),&quot;weekday&quot;,&quot;weekend&quot;))
+<pre><code class="r">activityDataNew &lt;- mutate(activityDataNew
+        ,week.or.weekend = ifelse(isWeekday(activityDataNew$date)
+        ,&quot;weekday&quot;,&quot;weekend&quot;))
 activityDataNew$week.or.weekend &lt;- as.factor(activityDataNew$week.or.weekend)
 </code></pre>
 
 <p>A new data frame is created which contains the average daily steps over each 5-minutes interval during the day, but the averages are now taken over weekdays and weekends separately.</p>
 
-<pre><code class="r">activityPaternSplit &lt;- ddply(activityDataNew,.(interval,week.or.weekend),summarise,average.steps = mean(steps))
+<pre><code class="r">activityPaternSplit &lt;- ddply(activityDataNew
+                             ,.(interval,week.or.weekend)
+                             ,summarise
+                             ,average.steps = mean(steps))
 </code></pre>
 
 <p>A panel lattice plot is created. The plots are stacked in order to increase comparability</p>

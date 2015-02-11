@@ -214,7 +214,9 @@ A new data frame is created that sums up the total steps for each date in the ne
 
 
 ```r
-activityStepDayNew <- ddply(activityDataNew,.(date),summarize,steps.per.day = sum(steps))
+activityStepDayNew <- ddply(activityDataNew
+                            ,.(date),summarize
+                            ,steps.per.day = sum(steps))
 ```
 
 A histogram is plotted. Again the number of breaks is increased
@@ -270,7 +272,9 @@ A new factor is created with two levels "weekday" or "weekend" indicating whethe
 
 
 ```r
-activityDataNew <- mutate(activityDataNew,week.or.weekend = ifelse(isWeekday(activityDataNew$date),"weekday","weekend"))
+activityDataNew <- mutate(activityDataNew
+        ,week.or.weekend = ifelse(isWeekday(activityDataNew$date)
+        ,"weekday","weekend"))
 activityDataNew$week.or.weekend <- as.factor(activityDataNew$week.or.weekend)
 ```
 
@@ -278,7 +282,10 @@ A new data frame is created which contains the average daily steps over each 5-m
 
 
 ```r
-activityPaternSplit <- ddply(activityDataNew,.(interval,week.or.weekend),summarise,average.steps = mean(steps))
+activityPaternSplit <- ddply(activityDataNew
+                             ,.(interval,week.or.weekend)
+                             ,summarise
+                             ,average.steps = mean(steps))
 ```
 
 A panel lattice plot is created. The plots are stacked in order to increase comparability
